@@ -11,15 +11,17 @@
   adaptation 
 
 ### What
-* OpenCpuX provides a standard, open source set of APIs for Virtualizer 
-  customers to integrate CPU models into a (virtual prototype) simulator
+* OpenCpuX provides a standard, open source set of APIs to integrate CPU models 
+into a (virtual prototype) simulator
 * The APIs are freely accessible under an open source license
-* Synopsys will deliver a production implementation of the Simulator 
-  Adaptor for Virtualizer
 
 ### Benefits
 * Foster re-use of CPU models across various simulation frameworks and 
   reduces repetitive adaptation work
+
+## System Requirements
+* [CMake](https://cmake.org), version 3.6 or higher
+* `gcc` and `g++`
 
 ## How to build
 

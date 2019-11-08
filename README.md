@@ -40,7 +40,8 @@ into a (virtual prototype) simulator
 * Run [CMake](https://cmake.org), then `make` to build both the test harness 
   and the dummy core in x64 mode:
 
-        CXX="g++ -m64" CC="gcc -m64" cmake ..
+        CXX="g++ -m64" CC="gcc -m64" cmake ..             # on bash, or
+        set CXX="g++ -m64"; set CC="gcc -m64";  cmake ..  # on csh 
         make
 
 * As a sanity test, you can try and run the test harness against 

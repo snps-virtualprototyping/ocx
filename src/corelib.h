@@ -1,6 +1,9 @@
-/******************************************************************************
- * Copyright Synopsys, licensed under the LGPL v2.1, see LICENSE for details
- ******************************************************************************/
+/*******************************************************************************
+* Copyright (C) 2019 Synopsys, Inc.
+* This source code is licensed under the terms of the GNU General Public License
+* as published by the Free Software Foundation; either version 2 of the License
+* or (at your option) any later version.
+*******************************************************************************/
 
 #ifndef OCX_CORELIB_H
 #define OCX_CORELIB_H

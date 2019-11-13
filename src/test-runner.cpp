@@ -96,8 +96,12 @@ TEST(ocx_basic, load_library) {
 }
 
 TEST(ocx_basic, instantiate_core) {
-    corelib cl(LIBRARY_PATH);
+    using ::testing::Return;
+    using ::testing::_;
     mock_env env;
+    ON_CALL(env, get_param(_)).WillByDefault(Return(nullptr));
+
+    corelib cl(LIBRARY_PATH);
     ocx::core* c = cl.create_core(env, CORE_VARIANT);
     ASSERT_NE(c, nullptr)
         << "failed to create core variant " << CORE_VARIANT;
@@ -190,32 +194,57 @@ TEST_F(ocx_core, register_size_not_zero) {
 }
 
 TEST_F(ocx_core, register_read_write) {
+
+    // the requirements to test reading/writing to the available register is
+    // as follows:
+    //
+    // - if we cannot read the register, we skip it
+    // - we attempt to write all ones to the register; if this fails, we
+    //   skip the register
+    // - after writing all ones, we expect to read at least one set bit,
+    //   otherwise we report and error for this register
+    // - we expect that we can write all zeroes to the register
+    // - after that, we expect that we have not extra bits set and that
+    //   at least one bit has been cleared; otherwise we report an error
+    // - if we did not find any readable or writable registers, we report
+    //   an error
+
     size_t num_tested = 0;
     std::vector<u8> rbuf;
+    std::vector<u8> rbuf_00;
+    std::vector<u8> rbuf_ff;
+    std::vector<u8> wbuf_00;
+    std::vector<u8> wbuf_ff;
     rbuf.resize(4096);
-    u8 wbuf_ff[4096];
-    u8 wbuf_00[4096];
+    rbuf_00.resize(4096);
+    rbuf_ff.resize(4096);
+    wbuf_00.resize(4096);
+    wbuf_ff.resize(4096);
 
-    memset(wbuf_ff, 0xff, sizeof(wbuf_ff));
-    memset(wbuf_00, 0x00, sizeof(wbuf_00));
+    wbuf_00.assign(wbuf_00.size(), 0);
+    wbuf_ff.assign(wbuf_ff.size(), 0xff);
 
     u64 num_regs = c->num_regs();
     for (u64 i = 0; i < num_regs; ++i) {
         u64 regsz = c->reg_size(i);
+
+        // check readability and skip otherwise
         if (!c->read_reg(i, rbuf.data()))
             continue;
 
-        if (!c->write_reg(i, wbuf_ff))
+        // write all ones, skip on failure
+        if (!c->write_reg(i, wbuf_ff.data()))
             continue;
 
         num_tested++;
 
-        rbuf.assign(rbuf.size(), 0);
-        EXPECT_TRUE(c->read_reg(i, rbuf.data()));
+        // read back register and check for at least one set bit
+        rbuf_ff.assign(rbuf.size(), 0);
+        EXPECT_TRUE(c->read_reg(i, rbuf_ff.data()));
 
         bool found_non_zero = false;
         for (size_t ri = 0; ri < regsz; ++ri) {
-            if (rbuf[ri] != 0) {
+            if (rbuf_ff[ri] != 0) {
                 found_non_zero = true;
                 break;
             }
@@ -225,16 +254,34 @@ TEST_F(ocx_core, register_read_write) {
             << "reading only zeroes after writing all ones to register "
             << i << " \'" << c->reg_name(i) << "\'";
 
-        EXPECT_TRUE(c->write_reg(i, wbuf_00));
+        //write all zeroes
+        EXPECT_TRUE(c->write_reg(i, wbuf_00.data()));
 
-        rbuf.assign(rbuf.size(), 0);
-        EXPECT_TRUE(c->read_reg(i, rbuf.data()));
+        // read back register
+        rbuf.assign(rbuf_00.size(), 0);
+        EXPECT_TRUE(c->read_reg(i, rbuf_00.data()));
 
+        // check for no extra set bits and at least one cleared bit
+        bool found_cleared_bit = false;
         for (size_t ri = 0; ri < regsz; ++ri) {
-            EXPECT_EQ(0, rbuf[ri])
-                << "unexpected non-zero value read from register " << i
-                << " \'" << c->reg_name(i) << "\' in byte " << ri;
+            if (rbuf_00[ri] != rbuf_ff[ri]) {
+                if (rbuf_ff[ri] & ~rbuf_00[ri]) {
+                    found_cleared_bit = true;
+                }
+
+                if (~rbuf_ff[ri] & rbuf_00[ri]) {
+                    FAIL()
+                        << "found extra set bit after writing all zeroes to "
+                        << "register " << i << " \'" << c->reg_name(i) << "\'"
+                        << "at " << ri << " old val was " << (int)rbuf_ff[ri]
+                        << ", value after writing zeros is " << (int)rbuf_00[ri];
+                }
+            }
         }
+
+        EXPECT_TRUE(found_cleared_bit)
+            << "no cleared bits after writing all zeroes to register  " << i
+            << " \'" << c->reg_name(i);
     }
 
     EXPECT_NE(num_tested, 0) << "found no r/w registers";
@@ -283,11 +330,14 @@ TEST_F(ocx_core, disassemble) {
     ASSERT_NE(codebuf, nullptr)
         << "could not prepare NOP code for " << c->arch();
 
+    ON_CALL(env, get_page_ptr_r(0)).WillByDefault(Return((u8 *)codebuf));
+    ON_CALL(env, get_page_ptr_w(0)).WillByDefault(Return(nullptr));
+
     std::vector<char> buf;
     buf.resize(4096);
     buf[0] = '\0';
 
-    u64 bytes = c->disassemble(codebuf, c->page_size(), buf.data(), buf.size());
+    u64 bytes = c->disassemble(0, buf.data(), buf.size());
 
     EXPECT_NE(0, bytes)
         << "disassemble consumed zero bytes";

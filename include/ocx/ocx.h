@@ -10,7 +10,7 @@
 
 #include <stdlib.h>
 
-#define OCX_API_VERSION 20191024ull
+#define OCX_API_VERSION 20191112ull
 
 namespace ocx {
 
@@ -123,8 +123,7 @@ namespace ocx {
 
         virtual void handle_syscall(int callno, void* arg) = 0;
 
-        virtual u64 disassemble(const void* src, size_t srcsz,
-                                char* tgt, size_t tgtsz) = 0;
+        virtual u64 disassemble(u64 addr, char* tgt, size_t tgtsz) = 0;
 
         virtual void invalidate_page_ptrs() = 0;
         virtual void invalidate_page_ptr(u64 page_paddr) = 0;

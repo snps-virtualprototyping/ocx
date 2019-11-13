@@ -9,14 +9,16 @@
 #define OCX_API_H
 
 #include <stdlib.h>
+#include <stdint.h>
 
-#define OCX_API_VERSION 20191112ull
+#define OCX_API_VERSION 20191113ull
 
 namespace ocx {
 
-    typedef unsigned char      u8;
-    typedef unsigned int       u32;
-    typedef unsigned long long u64;
+    typedef uint8_t  u8;
+    typedef uint16_t u16;
+    typedef uint32_t u32;
+    typedef uint64_t u64;
     typedef unsigned __int128  u128;
 
     struct transaction {

@@ -1,9 +1,6 @@
-/*******************************************************************************
-* Copyright (C) 2019 Synopsys, Inc.
-* This source code is licensed under the terms of the GNU General Public License
-* as published by the Free Software Foundation; either version 2 of the License
-* or (at your option) any later version.
-*******************************************************************************/
+/******************************************************************************
+ * Copyright Synopsys, licensed under the LGPL v2.1, see LICENSE for details
+ ******************************************************************************/
 
 #ifndef OCX_CORELIB_H
 #define OCX_CORELIB_H
@@ -24,7 +21,7 @@ private:
     createfunc* m_create;
     deletefunc* m_delete;
 
-    const char* const CREATE_SYM = "_ZN3ocx15create_instanceEyRNS_3envEPKc";
+    const char* const CREATE_SYM = "_ZN3ocx15create_instanceEmRNS_3envEPKc";
     const char* const DELETE_SYM = "_ZN3ocx15delete_instanceEPNS_4coreE";
 
     void do_construction() {

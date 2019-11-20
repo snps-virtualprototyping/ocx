@@ -15,6 +15,7 @@ add_subdirectory(googletest EXCLUDE_FROM_ALL)
 
 add_executable(ocx-test-runner ${test_sources})
 add_library(ocx-dummy-core MODULE ${lib_sources})
+set_target_properties(ocx-dummy-core PROPERTIES OUTPUT_NAME "ocx-dummy")
 
 find_library(LIB_RT rt)
 

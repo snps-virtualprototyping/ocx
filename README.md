@@ -1,4 +1,6 @@
-# OpenCpuX - Open Source Instruction-Set Simulation Integration Kit
+# OpenCpuX - Open Source Instruction-Set Simulation Integration Kit 
+
+## Build Status: [![Build Status](https://travis-ci.org/snps-virtualprototyping/ocx.svg?branch=master)](https://travis-ci.org/snps-virtualprototyping/ocx)
 
 ## Overview
 

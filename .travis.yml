@@ -1,0 +1,17 @@
+dist: trusty
+os:  linux
+
+language: cpp
+
+compiler:
+  - gcc
+
+env:
+  - BUILD=RELEASE
+
+before_script:
+  - mkdir BUILD && cd BUILD
+  - CXX="g++ -m64" CC="gcc -m64" cmake .. -DCMAKE_BUILD_TYPE=$BUILD
+
+script:
+  - make && ctest --output-on-failure

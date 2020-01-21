@@ -348,14 +348,22 @@ TEST_F(ocx_core, disassemble) {
 }
 
 int main(int argc, char** argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    if (argc != 3) {
-        std::cout << "Usage: ocx-test [gtest args] <path_to_ocx_lib> <variant>"
-                  << std::endl;
-        return -1;
-    }
+    try {
+        ::testing::InitGoogleTest(&argc, argv);
+        if (argc != 3) {
+            std::cerr << "Usage: ocx-test [gtest args] <path_to_ocx_lib> <variant>"
+                      << std::endl;
+            return -1;
+        }
 
-    LIBRARY_PATH = argv[1];
-    CORE_VARIANT = argv[2];
-    return RUN_ALL_TESTS();
+        LIBRARY_PATH = argv[1];
+        CORE_VARIANT = argv[2];
+        return RUN_ALL_TESTS();
+    } catch (const std::exception& err) {
+        std::cerr << "Unexpected exception: " << err.what() << std::endl;
+        return -2;
+    } catch (...) {
+        std::cerr << "Unexpected exception" << std::endl;
+        return -3;
+    }
 }

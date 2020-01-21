@@ -7,7 +7,11 @@ compiler:
   - gcc
 
 env:
-  - BUILD=RELEASE
+  global:
+     # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+     #   via the "travis encrypt" command using the project repo's public key
+    - secure: "vWlOllS/rl15VJZeWBqiRDzQFRvATYKbR7fJZC9u71uh0Mfm4+O8DM8R+JPdGwtW4DHLXVPy+dYUDS4uchsw2uGVsmgMT6eAK+d9cXiCBYkeaktea8Jq3U7jsvpZMz6k87LjPRNzXO/DpEm3VjUDjIwxxWBxuP8NlIxGu2zwPn8YBwARYM/Z0kWRfm8tWnk33hIjM7ox/3wF20HpPqvyLzwAboLPEnEfDzxJ0ZMuwvyZ6us5oO8ZMFqVhLRzJi4+BEJbM62XcIJoQ+L/4oL29lqWWibW3n96RkmGr9lTOHFmu62sT1Cj4S5KNYWL0J+9oFNp8C1bWPSaDhuvHRBK86moW877lzm+VM7JNHLWwnbMAPOa/af9nk8KeGVSIsO/ioBnXSbr6+65j5+hmQ/1uUTCmlX8UtueN7vtDaJI+sD7kFuoWbgUmPQrdFzJFrqjg4VZ6nwJQBISVGfSi4TSNvIrJ6/l3l7PtRViJu2AR4NuSuM17l44OpB8y7FYnNAJTpubmD6Rk42wL9p1LoewIha+//Qzb8TVE9+ImpHxxql3ce1FhBKPNOXUU5s9Qes+qdqA9DeESsoMAYxG9cqEJHM7t8H67bC7qZxYcoy1YyjZEVIbWv4dYUAcDHWGYPtXKdIIFmcAHmCkzapysqYZTL5kDxJmwKzTZjco6Gj7j/M="
+    - BUILD=RELEASE
 
 before_script:
   - mkdir BUILD && cd BUILD
@@ -15,3 +19,15 @@ before_script:
 
 script:
   - make && ctest --output-on-failure
+
+addons:
+  coverity_scan:
+    project:
+      name: "snps-virtualprototyping/ocx"
+      description: "OpenCpuX - Open Source Instruction-Set Simulation Integration Kit"
+    notification_email: tobies@synopsys.com
+    build_command_prepend:
+      - mkdir BUILD && cd BUILD
+      - CXX="g++ -m64" CC="gcc -m64" cmake .. -DCMAKE_BUILD_TYPE=$BUILD
+    build_command: "make"
+    branch_pattern: master

@@ -26,8 +26,5 @@ addons:
       name: "snps-virtualprototyping/ocx"
       description: "OpenCpuX - Open Source Instruction-Set Simulation Integration Kit"
     notification_email: tobies@synopsys.com
-    build_command_prepend:
-      - mkdir BUILD && cd BUILD
-      - CXX="g++ -m64" CC="gcc -m64" cmake .. -DCMAKE_BUILD_TYPE=$BUILD
     build_command: "make"
     branch_pattern: master

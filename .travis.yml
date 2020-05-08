@@ -27,4 +27,4 @@ addons:
       description: "OpenCpuX - Open Source Instruction-Set Simulation Integration Kit"
     notification_email: tobies@synopsys.com
     build_command: "make"
-    branch_pattern: master
+    branch_pattern: coverity

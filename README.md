@@ -28,12 +28,16 @@ into a (virtual prototype) simulator
 
 ## How to build
 
+### Platform independent
+
 * Clone the repository and `cd` into the repository
 * Initialize and update the [googletest](https://github.com/google/googletest) 
   submodule:
 
         git submodule init
         git submodule update
+
+### For Linux
 
 * Create a `BUILD` directory
 
@@ -61,4 +65,27 @@ into a (virtual prototype) simulator
 
         Total Test time (real) =   0.01 sec
 
+### For Windows Visual Studio 2017 and up
 
+* Start Visual Studio 
+
+* Use File -> Open Folder... to open the directory to which you have cloned
+  the ocx repository.
+
+* Visual Studio will detect that this is a CMake project and will generate the
+  necessary build files. Once this has completed ...
+
+* Build -> Build all
+
+* As a sanity test, you can try and run the test harness against
+  the dummy core integration. As this core integration does not 
+  actually implement any core behavior, only the most basic test is executed
+  by the `test` target
+
+        Test -> Run CTest for ocx
+
+        Start 1: smoke
+        1/1 Test #1: smoke ............................   Passed    0.16 sec
+        100% tests passed, 0 tests failed out of 1
+        Total Test time (real) =   0.18 sec
+  

@@ -11,22 +11,36 @@ set(inc "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set(test_sources "${src}/test-runner.cpp")
 set(lib_sources "${src}/dummy-core.cpp")
 
+# Prevent overriding the parent project's compiler/linker settings on Windows
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
 add_subdirectory(googletest EXCLUDE_FROM_ALL)
 
 add_executable(ocx-test-runner ${test_sources})
 add_library(ocx-dummy-core MODULE ${lib_sources})
 set_target_properties(ocx-dummy-core PROPERTIES OUTPUT_NAME "ocx-dummy")
 
-find_library(LIB_RT rt)
-
 target_link_libraries(ocx-test-runner
-                      gtest gmock gtest_main ${CMAKE_DL_LIBS} ${LIB_RT})
+                      gtest gmock gtest_main ${CMAKE_DL_LIBS})
+
+if (NOT MSVC)
+	find_library(LIB_RT rt)
+	target_link_libraries(ocx-test-runner ${LIB_RT})
+endif()
+
 
 target_include_directories(ocx-test-runner PUBLIC ${inc} ${src})
 target_include_directories(ocx-dummy-core PUBLIC ${inc})
 
-target_compile_options(ocx-test-runner PRIVATE -Werror -Wall -Wextra)
-target_compile_options(ocx-dummy-core PRIVATE -Werror -Wall -Wextra)
+if (MSVC)
+    # warning level 3 and all warnings as errors
+	target_compile_options(ocx-test-runner PRIVATE /W3 /WX)
+	target_compile_options(ocx-dummy-core PRIVATE /W3 /WX)
+else()
+    # lots of warnings and all warnings as errors
+	target_compile_options(ocx-test-runner PRIVATE -Werror -Wall -Wextra)
+	target_compile_options(ocx-dummy-core PRIVATE -Werror -Wall -Wextra)
+endif()
 
 install(TARGETS ocx-dummy-core DESTINATION lib)
 install(TARGETS ocx-test-runner DESTINATION bin)

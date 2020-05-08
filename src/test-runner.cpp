@@ -58,8 +58,25 @@ public:
     MOCK_METHOD1(get_param, const char*(const char*));
 };
 
+void free_nop_code(void* buf) {
+#ifdef _MSC_VER
+    _aligned_free(buf);
+#else
+    free(buf);
+#endif
+}
+
+void* alloc_nop_code(size_t sz) {
+#ifdef _MSC_VER
+    return _aligned_malloc(sz, 0x1000);
+#else
+    return result = valloc(sz);
+#endif
+}
+
 void* prepare_nop_code(size_t code_size, const std::string& arch) {
-    void* result = valloc(code_size);
+    void* result = alloc_nop_code(code_size);
+
     const char* nop;
     size_t nopsz;
 
@@ -71,7 +88,7 @@ void* prepare_nop_code(size_t code_size, const std::string& arch) {
         nopsz = 4;
     } else {
         std::cerr << "unknown architecture " << arch << std::endl;
-        free(result);
+        free_nop_code(result);
         return nullptr;
     }
 
@@ -89,7 +106,11 @@ TEST(ocx_basic, load_library) {
         corelib cl(LIBRARY_PATH, false);
     }
 
-    void* handle = dlopen(LIBRARY_PATH, RTLD_LOCAL | RTLD_NOW | RTLD_NOLOAD);
+#ifdef WIN32
+    void* handle = GetModuleHandle(LIBRARY_PATH);
+#else
+	void* handle = dlopen(LIBRARY_PATH, RTLD_LOCAL | RTLD_NOW | RTLD_NOLOAD);
+#endif
     EXPECT_EQ(handle, nullptr)
         << "unloading shared library " << LIBRARY_PATH
         << " seems to have failed";
@@ -319,7 +340,7 @@ TEST_F(ocx_core, breakpoint_run) {
     EXPECT_CALL(env, handle_breakpoint(0x200)).WillOnce(Return(false));
     EXPECT_CALL(env, handle_breakpoint(0x300)).WillOnce(Return(true));
     c->step(100);
-    free(codebuf);
+    free_nop_code(codebuf);
 }
 
 TEST_F(ocx_core, disassemble) {
@@ -344,7 +365,7 @@ TEST_F(ocx_core, disassemble) {
     EXPECT_NE(0, strnlen(buf.data(), buf.size()))
         << "unexpected empty string returned from disassemble";
 
-    free(codebuf);
+    free_nop_code(codebuf);
 }
 
 int main(int argc, char** argv) {

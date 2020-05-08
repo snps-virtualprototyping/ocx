@@ -6,7 +6,9 @@
 *******************************************************************************/
 
 #include <iostream>
-#include <unistd.h>
+#include <thread>
+
+#define OCX_DLL_EXPORT
 
 #include "ocx/ocx.h"
 
@@ -49,7 +51,7 @@ namespace ocx {
         }
 
         virtual u64 step(u64 num_insn) override {
-            usleep(10);
+			std::this_thread::sleep_for(std::chrono::microseconds(2));
             m_num_insn += num_insn;
             return num_insn;
         }

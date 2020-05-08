@@ -70,7 +70,7 @@ void* alloc_nop_code(size_t sz) {
 #ifdef _MSC_VER
     return _aligned_malloc(sz, 0x1000);
 #else
-    return result = valloc(sz);
+    return valloc(sz);
 #endif
 }
 

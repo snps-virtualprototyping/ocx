@@ -23,6 +23,8 @@
 #      define OCX_API __declspec(dllimport)
 #    endif  
 #  endif
+#else
+#  define OCX_API
 #endif
 
 namespace ocx {

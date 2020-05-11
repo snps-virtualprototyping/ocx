@@ -34,12 +34,12 @@ target_include_directories(ocx-dummy-core PUBLIC ${inc})
 
 if (MSVC)
     # warning level 3 and all warnings as errors
-	target_compile_options(ocx-test-runner PRIVATE /W3 /WX)
-	target_compile_options(ocx-dummy-core PRIVATE /W3 /WX)
+    target_compile_options(ocx-test-runner PRIVATE /W3 /WX)
+    target_compile_options(ocx-dummy-core PRIVATE /W3 /WX)
 else()
     # lots of warnings and all warnings as errors
-	target_compile_options(ocx-test-runner PRIVATE -Werror -Wall -Wextra)
-	target_compile_options(ocx-dummy-core PRIVATE -Werror -Wall -Wextra)
+    target_compile_options(ocx-test-runner PRIVATE -Werror -Wall -Wextra)
+    target_compile_options(ocx-dummy-core PRIVATE -Werror -Wall -Wextra)
 endif()
 
 install(TARGETS ocx-dummy-core DESTINATION lib)

@@ -49,7 +49,7 @@ private:
 
 public:
     corelib(const char* path, bool lazy = true): m_sopath(path),
-		m_handle(_dlopen(path, lazy)) {
+        m_handle(_dlopen(path, lazy)) {
         do_construction();
     }
 
@@ -67,10 +67,10 @@ public:
     }
 
 private:
-	static void* _dlopen(const char* path, bool lazy);
-	static int _dlclose(void* handle);
-	static void* _dlsym(void* handle, const char* sym);
-	static const char* _dlerror();
+    static void* _dlopen(const char* path, bool lazy);
+    static int _dlclose(void* handle);
+    static void* _dlsym(void* handle, const char* sym);
+    static const char* _dlerror();
 };
 
 #ifdef WIN32
@@ -79,8 +79,8 @@ private:
 #undef max
 
 void* corelib::_dlopen(const char* path, bool lazy) {
-	(void)lazy;
-	return (void*)LoadLibrary(path);
+    (void)lazy;
+    return (void*)LoadLibrary(path);
 }
 
 int corelib::_dlclose(void* handle) {
@@ -88,16 +88,16 @@ int corelib::_dlclose(void* handle) {
 }
 
 void* corelib::_dlsym(void* handle, const char* sym) {
-	return (void*)GetProcAddress((HMODULE)handle, sym);
+    return (void*)GetProcAddress((HMODULE)handle, sym);
 }
 
 const char* corelib::_dlerror() {
-	DWORD dwErrorCode = GetLastError();
-	static char buf[1024];
-	DWORD cchMsg = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-		NULL, dwErrorCode, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		buf, 1024, NULL);
-	return (cchMsg > 0) ? buf : "";
+    DWORD dwErrorCode = GetLastError();
+    static char buf[1024];
+    DWORD cchMsg = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                                 NULL, dwErrorCode, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                                 buf, 1024, NULL);
+    return (cchMsg > 0) ? buf : "";
 }
 
 #else
@@ -105,19 +105,19 @@ const char* corelib::_dlerror() {
 #include <dlfcn.h>
 
 void* corelib::_dlopen(const char* path, bool lazy) {
-	return dlopen(path, RTLD_LOCAL | (lazy ? RTLD_LAZY : RTLD_NOW));
+    return dlopen(path, RTLD_LOCAL | (lazy ? RTLD_LAZY : RTLD_NOW));
 }
 
 int corelib::_dlclose(void* handle) {
-	return dlclose(handle);
+    return dlclose(handle);
 }
 
 void* corelib::_dlsym(void* handle, const char* sym) {
-	return dlsym(handle, sym);
+    return dlsym(handle, sym);
 }
 
-const char* corelib::_dlerror() { 
-	return dlerror();  
+const char* corelib::_dlerror() {
+    return dlerror();
 }
 
 #endif

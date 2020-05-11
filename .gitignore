@@ -1,8 +1,10 @@
 /.project
 /.cproject
 /.settings
+/.vs
 
 /setup.sh
 
 /BUILD
+/out
 

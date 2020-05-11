@@ -13,13 +13,26 @@
 
 #define OCX_API_VERSION 20191113ull
 
+#ifdef _MSC_VER
+#  ifdef OCX_STATIC     
+#    define OCX_API
+#  else
+#    ifdef OCX_DLL_EXPORT
+#      define OCX_API __declspec(dllexport)
+#    else
+#      define OCX_API __declspec(dllimport)
+#    endif  
+#  endif
+#else
+#  define OCX_API
+#endif
+
 namespace ocx {
 
     typedef uint8_t  u8;
     typedef uint16_t u16;
     typedef uint32_t u32;
     typedef uint64_t u64;
-    typedef unsigned __int128  u128;
 
     struct transaction {
         u64 addr;
@@ -131,8 +144,8 @@ namespace ocx {
         virtual void invalidate_page_ptr(u64 page_paddr) = 0;
     };
 
-    extern core* create_instance(u64 api_version, env& e, const char* variant);
-    extern void  delete_instance(core* c);
+    extern OCX_API core* create_instance(u64 api_version, env& e, const char* variant);
+    extern OCX_API void  delete_instance(core* c);
 
 }
 

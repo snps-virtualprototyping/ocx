@@ -14,14 +14,14 @@
 #define OCX_API_VERSION 20200914ull
 
 #ifdef _MSC_VER
-#  ifdef OCX_STATIC     
+#  ifdef OCX_STATIC
 #    define OCX_API
 #  else
 #    ifdef OCX_DLL_EXPORT
 #      define OCX_API __declspec(dllexport)
 #    else
 #      define OCX_API __declspec(dllimport)
-#    endif  
+#    endif
 #  endif
 #else
 #  define OCX_API

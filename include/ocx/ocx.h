@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#define OCX_API_VERSION 20191113ull
+#define OCX_API_VERSION 20200914ull
 
 namespace ocx {
 
@@ -58,6 +58,7 @@ namespace ocx {
 
         virtual u8* get_page_ptr_r(u64 page_paddr) = 0;
         virtual u8* get_page_ptr_w(u64 page_paddr) = 0;
+        virtual u8* get_page_ptr_x(u64 page_paddr) = 0;
 
         virtual response transport(const transaction& tx) = 0;
         virtual void signal(u64 sigid, bool set) = 0;

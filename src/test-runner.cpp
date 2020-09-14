@@ -45,6 +45,7 @@ public:
     ~mock_env() {}
     MOCK_METHOD1(get_page_ptr_r, u8*(u64));
     MOCK_METHOD1(get_page_ptr_w, u8*(u64));
+    MOCK_METHOD1(get_page_ptr_x, u8*(u64));
     MOCK_METHOD1(transport, response(const transaction&));
     MOCK_METHOD2(signal, void(u64, bool));
     MOCK_METHOD2(broadcast_syscall, void(int, void*));

@@ -143,6 +143,9 @@ namespace ocx {
 
         virtual void invalidate_page_ptrs() = 0;
         virtual void invalidate_page_ptr(u64 page_paddr) = 0;
+
+        virtual void tb_flush() = 0;
+        virtual void tb_flush_page(u64 start, u64 end) = 0;
     };
 
     extern OCX_API core* create_instance(u64 api_version, env& e, const char* variant);

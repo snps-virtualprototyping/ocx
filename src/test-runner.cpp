@@ -335,8 +335,9 @@ TEST_F(ocx_core, breakpoint_run) {
     ASSERT_TRUE(c->read_reg(pc, &buf)) << "failed to read back PC";
     ASSERT_EQ(addr, buf) << "PC has unexpected value";
 
+    ON_CALL(env, get_page_ptr_x(0)).WillByDefault(Return((u8 *)codebuf));
     ON_CALL(env, get_page_ptr_r(0)).WillByDefault(Return((u8 *)codebuf));
-    ON_CALL(env, get_page_ptr_w(0)).WillByDefault(Return(nullptr));
+    ON_CALL(env, get_page_ptr_w(0)).WillByDefault(Return((u8 *)codebuf));
 
     EXPECT_CALL(env, handle_breakpoint(0x200)).WillOnce(Return(false));
     EXPECT_CALL(env, handle_breakpoint(0x300)).WillOnce(Return(true));
@@ -367,6 +368,13 @@ TEST_F(ocx_core, disassemble) {
         << "unexpected empty string returned from disassemble";
 
     free_nop_code(codebuf);
+}
+
+TEST_F(ocx_core, tb_flush) {
+    // hard to actually test, but check that we can call the flush
+    // methods without crashing the core
+    c->tb_flush();
+    c->tb_flush_page(0x0, 0x8192);
 }
 
 int main(int argc, char** argv) {

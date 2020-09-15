@@ -166,6 +166,16 @@ namespace ocx {
             (void)page_paddr;
         }
 
+        virtual void tb_flush() override {
+            return;
+        }
+
+        virtual void tb_flush_page(u64 start, u64 end) override {
+            (void)start;
+            (void)end;
+            return;
+        }
+
     private:
         u64 m_num_insn;
     };

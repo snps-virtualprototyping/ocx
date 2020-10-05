@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <memory>
 
 #define OCX_API_VERSION 20201005ull
 
@@ -76,9 +77,8 @@ namespace ocx {
         virtual response transport(const transaction& tx) = 0;
         virtual void signal(u64 sigid, bool set) = 0;
 
-        virtual void broadcast_syscall(int callno, void* arg) = 0;
-        virtual void broadcast_syscall_async(int callno, void* arg,
-                                             size_t sz) = 0;
+        virtual void broadcast_syscall(int callno, std::shared_ptr<void> arg,
+                                       bool async) = 0;
 
         virtual u64 get_time_ps() = 0;
         virtual const char* get_param(const char* name) = 0;
@@ -139,7 +139,7 @@ namespace ocx {
 
         virtual bool virt_to_phys(u64 vaddr, u64& paddr) = 0;
 
-        virtual void handle_syscall(int callno, void* arg) = 0;
+        virtual void handle_syscall(int callno, std::shared_ptr<void> arg) = 0;
 
         virtual u64 disassemble(u64 addr, char* tgt, size_t tgtsz) = 0;
 
@@ -150,7 +150,7 @@ namespace ocx {
         virtual void tb_flush_page(u64 start, u64 end) = 0;
     };
 
-    extern OCX_API core* create_instance(u64 api_version, env& e, const char* variant);
+    extern OCX_API core* create_instance(u64 ver, env& e, const char* variant);
     extern OCX_API void  delete_instance(core* c);
 
 }

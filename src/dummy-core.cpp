@@ -146,7 +146,8 @@ namespace ocx {
             return false;
         }
 
-        virtual void handle_syscall(int callno, void* arg) override {
+        virtual void handle_syscall(int callno,
+                                    std::shared_ptr<void> arg) override {
             (void)callno;
             (void)arg;
         }

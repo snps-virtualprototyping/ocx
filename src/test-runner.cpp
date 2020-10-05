@@ -49,6 +49,7 @@ public:
     MOCK_METHOD1(transport, response(const transaction&));
     MOCK_METHOD2(signal, void(u64, bool));
     MOCK_METHOD2(broadcast_syscall, void(int, void*));
+    MOCK_METHOD3(broadcast_syscall_async, void(int, void*, size_t));
     MOCK_METHOD0(get_time_ps, u64());
     MOCK_METHOD2(notify, void(u64, u64));
     MOCK_METHOD1(cancel, void(u64));

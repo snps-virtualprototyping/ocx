@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#define OCX_API_VERSION 20200914ull
+#define OCX_API_VERSION 20201005ull
 
 #ifdef _MSC_VER
 #  ifdef OCX_STATIC
@@ -77,6 +77,8 @@ namespace ocx {
         virtual void signal(u64 sigid, bool set) = 0;
 
         virtual void broadcast_syscall(int callno, void* arg) = 0;
+        virtual void broadcast_syscall_async(int callno, void* arg,
+                                             size_t sz) = 0;
 
         virtual u64 get_time_ps() = 0;
         virtual const char* get_param(const char* name) = 0;

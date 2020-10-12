@@ -45,7 +45,7 @@ public:
     ~mock_env() {}
     MOCK_METHOD1(get_page_ptr_r, u8*(u64));
     MOCK_METHOD1(get_page_ptr_w, u8*(u64));
-    MOCK_METHOD1(get_page_ptr_x, u8*(u64));
+    MOCK_METHOD2(protect_page, void(u8*,u64));
     MOCK_METHOD1(transport, response(const transaction&));
     MOCK_METHOD2(signal, void(u64, bool));
     MOCK_METHOD3(broadcast_syscall, void(int, std::shared_ptr<void>, bool));
@@ -335,7 +335,6 @@ TEST_F(ocx_core, breakpoint_run) {
     ASSERT_TRUE(c->read_reg(pc, &buf)) << "failed to read back PC";
     ASSERT_EQ(addr, buf) << "PC has unexpected value";
 
-    ON_CALL(env, get_page_ptr_x(0)).WillByDefault(Return((u8 *)codebuf));
     ON_CALL(env, get_page_ptr_r(0)).WillByDefault(Return((u8 *)codebuf));
     ON_CALL(env, get_page_ptr_w(0)).WillByDefault(Return((u8 *)codebuf));
 

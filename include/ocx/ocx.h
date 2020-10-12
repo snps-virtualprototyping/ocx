@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include <memory>
 
-#define OCX_API_VERSION 20201005ull
+#define OCX_API_VERSION 20201012ull
 
 #ifdef _MSC_VER
 #  ifdef OCX_STATIC
@@ -72,7 +72,8 @@ namespace ocx {
 
         virtual u8* get_page_ptr_r(u64 page_paddr) = 0;
         virtual u8* get_page_ptr_w(u64 page_paddr) = 0;
-        virtual u8* get_page_ptr_x(u64 page_paddr) = 0;
+
+        virtual void protect_page(u8* page_ptr, u64 page_addr) = 0;
 
         virtual response transport(const transaction& tx) = 0;
         virtual void signal(u64 sigid, bool set) = 0;

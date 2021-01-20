@@ -1,10 +1,11 @@
-dist: trusty
+dist: bionic
 os:  linux
 
 language: cpp
 
 compiler:
   - gcc
+  - clang
 
 env:
   global:

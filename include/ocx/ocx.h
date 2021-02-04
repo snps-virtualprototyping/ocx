@@ -8,6 +8,7 @@
 #ifndef OCX_API_H
 #define OCX_API_H
 
+#include <stddef.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <memory>

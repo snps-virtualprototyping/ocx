@@ -87,6 +87,9 @@ void* prepare_nop_code(size_t code_size, const std::string& arch) {
     } else if (arch == "openrisc") {
         nop = "\x00\x00\x00\x15";
         nopsz = 4;
+    } else if (arch == "X86_64") {
+        nop = "\x90";
+        nopsz = 1;
     } else {
         std::cerr << "unknown architecture " << arch << std::endl;
         free_nop_code(result);
@@ -310,17 +313,43 @@ TEST_F(ocx_core, register_read_write) {
 }
 
 TEST_F(ocx_core, breakpoint_add_remove) {
-    ASSERT_TRUE(c->add_breakpoint(0x0));
-    ASSERT_TRUE(c->remove_breakpoint(0x0));
-}
-
-TEST_F(ocx_core, breakpoint_run) {
     using ::testing::Return;
 
     void *codebuf = prepare_nop_code(c->page_size(), c->arch_family());
     ASSERT_NE(codebuf, nullptr) <<
             "could not prepare NOP code for " << c->arch_family();
 
+    ON_CALL(env, get_page_ptr_r(0)).WillByDefault(Return((u8 *)codebuf));
+    ON_CALL(env, get_page_ptr_w(0)).WillByDefault(Return((u8 *)codebuf));
+
+    ASSERT_TRUE(c->add_breakpoint(0x0));
+    ASSERT_TRUE(c->remove_breakpoint(0x0));
+}
+
+ACTION_P(GetPtr, codebuf, codebuf_sz) {
+    return arg0 < codebuf_sz ? (u8*)codebuf + arg0 : nullptr;
+}
+
+TEST_F(ocx_core, breakpoint_run) {
+    using ::testing::Return;
+    using ::testing::_;
+
+    u64 codebuf_sz;
+    if (strcmp(c->arch_family(), "X86_64") == 0)
+        codebuf_sz = 0x201000;
+    else
+        codebuf_sz = c->page_size();
+
+    void *codebuf = prepare_nop_code(codebuf_sz, c->arch_family());
+    ASSERT_NE(codebuf, nullptr) <<
+            "could not prepare NOP code for " << c->arch_family();
+
+    ON_CALL(env, get_page_ptr_r(_)).WillByDefault(GetPtr(codebuf, codebuf_sz));
+    ON_CALL(env, get_page_ptr_w(_)).WillByDefault(GetPtr(codebuf, codebuf_sz));
+
+    c->reset();
+
+    u64 start = 0x100;
     u64 addr = 0x200;
     ASSERT_TRUE(c->add_breakpoint(addr))
         << "failed to set breakpoint";
@@ -328,19 +357,19 @@ TEST_F(ocx_core, breakpoint_run) {
         << "failed to set breakpoint";
 
     u64 pc = c->pc_regid();
-    ASSERT_TRUE(c->write_reg(pc, &addr))
+    ASSERT_TRUE(c->write_reg(pc, &start))
         << "failed to set PC to  " << std::hex << addr;
 
     u64 buf = 0;
     ASSERT_TRUE(c->read_reg(pc, &buf)) << "failed to read back PC";
-    ASSERT_EQ(addr, buf) << "PC has unexpected value";
+    ASSERT_EQ(start, buf) << "PC has unexpected value";
 
-    ON_CALL(env, get_page_ptr_r(0)).WillByDefault(Return((u8 *)codebuf));
-    ON_CALL(env, get_page_ptr_w(0)).WillByDefault(Return((u8 *)codebuf));
-
+    // execution should hit the first breakpoint, continue to the
+    // second breakpoint and then return from step
     EXPECT_CALL(env, handle_breakpoint(0x200)).WillOnce(Return(false));
     EXPECT_CALL(env, handle_breakpoint(0x300)).WillOnce(Return(true));
-    c->step(100);
+
+    c->step(0x200);
     free_nop_code(codebuf);
 }
 

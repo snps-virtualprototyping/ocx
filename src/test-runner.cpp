@@ -87,7 +87,7 @@ void* prepare_nop_code(size_t code_size, const std::string& arch) {
     } else if (arch == "openrisc") {
         nop = "\x00\x00\x00\x15";
         nopsz = 4;
-    } else if (arch == "X86_64") {
+    } else if (arch== "X86") {
         nop = "\x90";
         nopsz = 1;
     } else {
@@ -335,7 +335,7 @@ TEST_F(ocx_core, breakpoint_run) {
     using ::testing::_;
 
     u64 codebuf_sz;
-    if (strcmp(c->arch_family(), "X86_64") == 0)
+    if (strcmp(c->arch_family(), "X86") == 0)
         codebuf_sz = 0x201000;
     else
         codebuf_sz = c->page_size();

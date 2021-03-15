@@ -324,6 +324,8 @@ TEST_F(ocx_core, breakpoint_add_remove) {
 
     ASSERT_TRUE(c->add_breakpoint(0x0));
     ASSERT_TRUE(c->remove_breakpoint(0x0));
+
+    free_nop_code(codebuf);
 }
 
 ACTION_P(GetPtr, codebuf, codebuf_sz) {

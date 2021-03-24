@@ -45,6 +45,8 @@ namespace ocx {
         }
 
         void protect_page(u8* page_ptr, u64 page_addr) override {
+            (void)page_ptr;
+            (void)page_addr;
             abort();
         }
 
@@ -53,11 +55,16 @@ namespace ocx {
         };
         
         void signal(u64 sigid, bool set) override {
+            (void)sigid;
+            (void)set;
             abort();
         }
 
         void broadcast_syscall(int callno, shared_ptr<void> arg,
                                bool async) override {
+            (void)callno;
+            (void)arg;
+            (void)async;
             abort();
         }
 
@@ -66,14 +73,18 @@ namespace ocx {
         }
 
         const char* get_param(const char* name) override {
+            (void)name;
             return nullptr;
         }
 
         void notify(u64 eventid, u64 time_ps) override {
+            (void)eventid;
+            (void)time_ps;
             abort();
         };
 
         void cancel(u64 eventid) override {
+            (void)eventid;
             abort();
         }
 
@@ -86,11 +97,16 @@ namespace ocx {
         }
 
         bool handle_breakpoint(u64 vaddr) override {
+            (void)vaddr;
             abort();
         }
 
         bool handle_watchpoint(u64 vaddr, u64 size, u64 data,
                                bool iswr) override {
+            (void)vaddr;
+            (void)size;
+            (void)data;
+            (void)iswr;
             abort();
         }
 

@@ -9,7 +9,7 @@
 #include "memory.h"
 
 #ifndef WIN32
-#include <sys/mmap.h>
+#include <sys/mman.h>
 #endif
 
 #include <inttypes.h>
@@ -23,7 +23,8 @@ namespace ocx {
         m_memory(nullptr),
         m_buffer(nullptr) {
 #ifdef WIN32
-        m_buffer = m_memory = (u8*)_aligned_malloc(size, alignment);
+        m_buffer = _aligned_malloc(size, alignment);
+        m_memory = (u8*)m_buffer;
         ERROR_ON(m_memory == nullptr,
                  "Unable to allocate %" PRIu64 " bytes of memory\n", size);
 #else
@@ -33,8 +34,8 @@ namespace ocx {
         ERROR_ON(m_buffer == MAP_FAILED,
                  "Unable to reserve %" PRIu64 " bytes of memory\n", size);
 
-        uintptr_t aligned_start = ((uintptr_t)m_buffer + (alignment - 1)) 
-                                  & ~(alignment - 1)
+        uintptr_t aligned_start = ((uintptr_t)m_buffer + (alignment - 1))
+                                  & ~(alignment - 1);
         m_memory = (u8*)aligned_start;
 #endif
     }
@@ -48,7 +49,7 @@ namespace ocx {
     }
 
     void memory::load(const char* path) {
-            
+
         std::ifstream file(path, std::ios::binary);
         file.unsetf(std::ios::skipws);
 
@@ -59,7 +60,7 @@ namespace ocx {
         file_size = file.tellg();
         file.seekg(0, std::ios::beg);
 
-        ERROR_ON ((u64)file_size > m_size, 
+        ERROR_ON ((u64)file_size > m_size,
                   "file %s larger than memory size %" PRIu64, path, m_size);
 
         file.read((char*)m_memory, file_size);

@@ -20,7 +20,7 @@ namespace ocx {
     private:
         u64 m_size;
         u8* m_memory;
-        u8* m_buffer;
+        void* m_buffer;
 
         memory() = delete;
         memory(const memory&) = delete;

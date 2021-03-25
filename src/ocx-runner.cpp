@@ -127,6 +127,7 @@ static void usage(const char* name) {
     fprintf(stderr, "Arguments:\n");
     fprintf(stderr, "  -b <file>   raw binary image to load into memory\n");
     fprintf(stderr, "  -m <size>   simulated memory size (in bytes)\n");
+    fprintf(stderr, "  -a <align>  memory alignment (in bytes)\n");
     fprintf(stderr, "  -n <cores>  number of core instances\n");
     fprintf(stderr, "  -q <n>      number of instructions per quantum\n");
     fprintf(stderr, "  <ocx-lib>   the OCX core library to load\n");
@@ -150,6 +151,7 @@ int main(int argc, char** argv) {
     char* ocx_lib_path = NULL;
     char* ocx_variant = NULL;
     unsigned int memsize = 0x08000000; // 128MB
+    unsigned int memalign = 0x1000;    // 4K
     unsigned int quantum = 1000000;    // 1M instructions
     unsigned int ncores = 1;
 
@@ -158,6 +160,7 @@ int main(int argc, char** argv) {
         switch(c) {
         case 'b': binary    = optarg; break;
         case 'm': memsize   = atoi(optarg); break;
+        case 'a': memalign  = atoi(optarg); break;
         case 'q': quantum   = atoi(optarg); break;
         case 'n': ncores    = atoi(optarg); break;
         case 'h': usage(argv[0]); return EXIT_SUCCESS;
@@ -181,7 +184,7 @@ int main(int argc, char** argv) {
     ocx_variant =  argv[optind + 1];
 
     corelib cl(ocx_lib_path);
-    ocx::memory mem(memsize, 0x1000);
+    ocx::memory mem(memsize, memalign);
     printf("Allocated 0x%" PRIx64 " bytes at 0x%p\n",
            mem.get_size(), mem.get_ptr());
 

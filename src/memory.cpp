@@ -68,7 +68,14 @@ namespace ocx {
     }
 
     ocx::response memory::transact(const ocx::transaction& tx) {
-        (void)tx;
-        return RESP_FAILED;
+        if (tx.addr + tx.size >= m_size)
+            return RESP_FAILED;
+
+        if (tx.is_read)
+            memcpy(tx.data, m_memory + tx.addr, tx.size);
+        else
+            memcpy(m_memory + tx.addr, tx.data, tx.size);
+
+        return RESP_OK;
     }
 }

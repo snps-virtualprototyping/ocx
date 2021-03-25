@@ -8,7 +8,7 @@
 #include "common.h"
 #include "memory.h"
 
-#ifndef WIN32
+#ifndef _MSC_VER
 #include <sys/mman.h>
 #endif
 
@@ -22,7 +22,7 @@ namespace ocx {
         m_size(size),
         m_memory(nullptr),
         m_buffer(nullptr) {
-#ifdef WIN32
+#ifdef _MSC_VER
         m_buffer = _aligned_malloc(size, alignment);
         m_memory = (u8*)m_buffer;
         ERROR_ON(m_memory == nullptr,

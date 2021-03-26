@@ -41,7 +41,7 @@ namespace ocx {
     }
 
     memory::~memory() {
-#ifdef WIN32
+#ifdef _MSC_VER
         _aligned_free(m_buffer);
 #else
         (void)munmap(m_buffer, m_size);
@@ -77,5 +77,17 @@ namespace ocx {
             memcpy(m_memory + tx.addr, tx.data, tx.size);
 
         return RESP_OK;
+    }
+
+    void memory::protect_page(u8* page_ptr, u64 page_addr) {
+        (void)page_addr;
+#ifdef _MSC_VER
+         DWORD oldProtect;
+         if (!VirtualProtect(page, PAGE_SIZE, PAGE_READONLY, &oldProtect))
+             ERROR("failed to protect memory at %p - error %d",
+                   page, GetLastError());
+ #else
+         mprotect(page_ptr, 0x1000, PROT_READ);
+ #endif
     }
 }

@@ -32,6 +32,7 @@ namespace ocx {
         inline u8* get_ptr()  const { return m_memory; }
         inline u64 get_size() const { return m_size; }
 
+        void protect_page(u8* page_ptr, u64 page_addr);
         void load(const char*);
 
         ocx::response transact(const ocx::transaction& tx);

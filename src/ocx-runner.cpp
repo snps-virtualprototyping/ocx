@@ -26,8 +26,9 @@ using namespace std;
 namespace ocx {
     class runenv : public env {
     public:
-        runenv(memory &mem) :
-            m_mem(mem)
+        runenv(memory &mem, u64 uart) :
+            m_mem(mem),
+            m_uart(uart)
         {}
 
         ~runenv() {}
@@ -35,23 +36,27 @@ namespace ocx {
         u8* get_page_ptr_r(u64 page_paddr) override {
             if (page_paddr >= m_mem.get_size())
                 return nullptr;
+            if (page_paddr == (m_uart & ~0xfff))
+                return nullptr;
+
             return m_mem.get_ptr() + page_paddr;
         }
 
         u8* get_page_ptr_w(u64 page_paddr) override {
             if (page_paddr >= m_mem.get_size())
                 return nullptr;
+            if (page_paddr == (m_uart & ~0xfff))
+                return nullptr;
+
             return m_mem.get_ptr() + page_paddr;
         }
 
         void protect_page(u8* page_ptr, u64 page_addr) override {
-            (void)page_ptr;
-            (void)page_addr;
-            abort();
+            m_mem.protect_page(page_ptr, page_addr);
         }
 
         response transport(const transaction& tx) override {
-            if (tx.addr == 0x40000000) {
+            if (tx.addr == m_uart) {
                 if (tx.is_read || tx.size != 4)
                     return RESP_FAILED;
                 putchar(*(u32*)tx.data);
@@ -117,17 +122,20 @@ namespace ocx {
         }
 
     private:
-        memory &m_mem;
+        memory& m_mem;
+        u64     m_uart;
     };
 }
 
 static void usage(const char* name) {
-    fprintf(stderr, "Usage: %s -b file [-m size] ", name);
-    fprintf(stderr, "[-n num] [-q num] <ocx-lib> <variant>\n");
+    fprintf(stderr, "Usage: %s -b file [-m size] [-a align] [-u uart]", name);
+    fprintf(stderr, "[-r pc] [-n num] [-q num] <ocx-lib> <variant>\n");
     fprintf(stderr, "Arguments:\n");
     fprintf(stderr, "  -b <file>   raw binary image to load into memory\n");
     fprintf(stderr, "  -m <size>   simulated memory size (in bytes)\n");
     fprintf(stderr, "  -a <align>  memory alignment (in bytes)\n");
+    fprintf(stderr, "  -u <addr>   uart address\n");
+    fprintf(stderr, "  -r <addr>   reset pc value\n");
     fprintf(stderr, "  -n <cores>  number of core instances\n");
     fprintf(stderr, "  -q <n>      number of instructions per quantum\n");
     fprintf(stderr, "  <ocx-lib>   the OCX core library to load\n");
@@ -153,16 +161,20 @@ int main(int argc, char** argv) {
     unsigned int memsize = 0x08000000; // 128MB
     unsigned int memalign = 0x1000;    // 4K
     unsigned int quantum = 1000000;    // 1M instructions
+    unsigned int uart = 0x40000000;
+    unsigned int reset = 0x0;
     unsigned int ncores = 1;
 
     int c; // parse command line
-    while ((c = getopt(argc, argv, "b:m:n:q:h")) != -1) {
+    while ((c = getopt(argc, argv, "b:m:n:q:u:r:h")) != -1) {
         switch(c) {
         case 'b': binary    = optarg; break;
-        case 'm': memsize   = atoi(optarg); break;
-        case 'a': memalign  = atoi(optarg); break;
-        case 'q': quantum   = atoi(optarg); break;
-        case 'n': ncores    = atoi(optarg); break;
+        case 'm': memsize   = strtol(optarg, nullptr, 0); break;
+        case 'a': memalign  = strtol(optarg, nullptr, 0); break;
+        case 'q': quantum   = strtol(optarg, nullptr, 0); break;
+        case 'n': ncores    = strtol(optarg, nullptr, 0); break;
+        case 'u': uart      = strtol(optarg, nullptr, 0); break;
+        case 'r': reset     = strtol(optarg, nullptr, 0); break;
         case 'h': usage(argv[0]); return EXIT_SUCCESS;
         default : usage(argv[0]); return EXIT_FAILURE;
         }
@@ -187,11 +199,12 @@ int main(int argc, char** argv) {
     ocx::memory mem(memsize, memalign);
     printf("Allocated 0x%" PRIx64 " bytes at 0x%p\n",
            mem.get_size(), mem.get_ptr());
+    printf("Placing UART at 0x%08" PRIx32 "\n", uart);
 
     mem.load(binary);
     printf("Loaded file %s into memory\n", binary);
 
-    ocx::runenv env(mem);
+    ocx::runenv env(mem, uart);
 
     vector<ocx::core*> cores;
     for (unsigned int i = 0; i < ncores; ++i) {
@@ -210,7 +223,7 @@ int main(int argc, char** argv) {
 
     vector<thread> threads;
     for (auto c : cores)
-        threads.emplace_back(run_core, c, quantum, 0);
+        threads.emplace_back(run_core, c, quantum, reset);
 
     for (auto& t : threads)
         t.join();

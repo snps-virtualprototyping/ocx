@@ -56,7 +56,8 @@ public:
     MOCK_METHOD1(handle_breakpoint, bool(u64));
     MOCK_METHOD4(handle_watchpoint, bool(u64, u64, u64, bool));
     MOCK_METHOD1(handle_begin_basic_block, void(u64));
-    MOCK_METHOD1(get_param, const char*(const char*));
+    
+    const char* get_param(const char*) { return nullptr; }
 };
 
 void free_nop_code(void* buf) {
@@ -124,7 +125,6 @@ TEST(ocx_basic, instantiate_core) {
     using ::testing::Return;
     using ::testing::_;
     mock_env env;
-    ON_CALL(env, get_param(_)).WillByDefault(Return(nullptr));
 
     corelib cl(LIBRARY_PATH);
     ocx::core* c = cl.create_core(env, CORE_VARIANT);

@@ -26,9 +26,10 @@ using namespace std;
 namespace ocx {
     class runenv : public env {
     public:
-        runenv(memory &mem, u64 uart) :
+        runenv(memory &mem, u64 uart, map<string, string>& params) :
             m_mem(mem),
-            m_uart(uart)
+            m_uart(uart),
+            m_params(params)
         {}
 
         ~runenv() {}
@@ -84,8 +85,11 @@ namespace ocx {
         }
 
         const char* get_param(const char* name) override {
-            (void)name;
-            return nullptr;
+            auto it = m_params.find(name);
+            if (it != m_params.end())
+                return it->second.c_str();
+            else 
+                return nullptr;
         }
 
         void notify(u64 eventid, u64 time_ps) override {
@@ -124,12 +128,14 @@ namespace ocx {
     private:
         memory& m_mem;
         u64     m_uart;
+        map<string, string> m_params;
     };
 }
 
 static void usage(const char* name) {
     fprintf(stderr, "Usage: %s -b file [-m size] [-a align] [-u uart]", name);
-    fprintf(stderr, "[-r pc] [-n num] [-q num] <ocx-lib> <variant>\n");
+    fprintf(stderr, "[-r pc] [-n num] [-q num] {-D x=y}\n");
+    fprintf(stderr, "<ocx-lib> <variant>\n");
     fprintf(stderr, "Arguments:\n");
     fprintf(stderr, "  -b <file>   raw binary image to load into memory\n");
     fprintf(stderr, "  -m <size>   simulated memory size (in bytes)\n");
@@ -138,6 +144,7 @@ static void usage(const char* name) {
     fprintf(stderr, "  -r <addr>   reset pc value\n");
     fprintf(stderr, "  -n <cores>  number of core instances\n");
     fprintf(stderr, "  -q <n>      number of instructions per quantum\n");
+    fprintf(stderr, "  -D <param> = <val>   config param setting\n");
     fprintf(stderr, "  <ocx-lib>   the OCX core library to load\n");
     fprintf(stderr, "  <variant>   the OCX core variant to instantiate\n");
 }
@@ -164,9 +171,11 @@ int main(int argc, char** argv) {
     unsigned int uart = 0x40000000;
     unsigned int reset = 0x0;
     unsigned int ncores = 1;
+    vector<string> params;
+    map<string, string> params_map;
 
     int c; // parse command line
-    while ((c = getopt(argc, argv, "b:m:n:q:u:r:h")) != -1) {
+    while ((c = getopt(argc, argv, "b:m:n:q:u:r:D:h")) != -1) {
         switch(c) {
         case 'b': binary    = optarg; break;
         case 'm': memsize   = strtol(optarg, nullptr, 0); break;
@@ -175,6 +184,7 @@ int main(int argc, char** argv) {
         case 'n': ncores    = strtol(optarg, nullptr, 0); break;
         case 'u': uart      = strtol(optarg, nullptr, 0); break;
         case 'r': reset     = strtol(optarg, nullptr, 0); break;
+        case 'D': params.push_back(optarg);               break;
         case 'h': usage(argv[0]); return EXIT_SUCCESS;
         default : usage(argv[0]); return EXIT_FAILURE;
         }
@@ -192,6 +202,18 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
+    for (auto& param : params) {
+        istringstream s(param);
+        string name;
+        string value;
+        if (!getline(s, name, '=') || !getline(s, value)) {
+            fprintf(stderr, "invalid parameter setting %s\n", param.c_str());
+            usage(argv[0]);
+            return EXIT_FAILURE;
+        }
+        params_map[name] = value;
+    }
+
     ocx_lib_path = argv[optind];
     ocx_variant =  argv[optind + 1];
 
@@ -204,7 +226,7 @@ int main(int argc, char** argv) {
     mem.load(binary);
     printf("Loaded file %s into memory\n", binary);
 
-    ocx::runenv env(mem, uart);
+    ocx::runenv env(mem, uart, params_map);
 
     vector<ocx::core*> cores;
     for (unsigned int i = 0; i < ncores; ++i) {

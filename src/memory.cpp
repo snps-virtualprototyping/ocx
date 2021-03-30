@@ -5,12 +5,18 @@
 * or (at your option) any later version.
 *******************************************************************************/
 
-#include "common.h"
-#include "memory.h"
-
-#ifndef _MSC_VER
+#ifdef _MSC_VER
+#include <Windows.h>
+#else
 #include <sys/mman.h>
 #endif
+
+#ifdef ERROR
+#undef ERROR
+#endif
+
+#include "common.h"
+#include "memory.h"
 
 #include <inttypes.h>
 #include <iostream>
@@ -83,9 +89,9 @@ namespace ocx {
         (void)page_addr;
 #ifdef _MSC_VER
          DWORD oldProtect;
-         if (!VirtualProtect(page, PAGE_SIZE, PAGE_READONLY, &oldProtect))
+         if (!VirtualProtect(page_ptr, 0x1000, PAGE_READONLY, &oldProtect))
              ERROR("failed to protect memory at %p - error %d",
-                   page, GetLastError());
+                   page_ptr, GetLastError());
  #else
          mprotect(page_ptr, 0x1000, PROT_READ);
  #endif

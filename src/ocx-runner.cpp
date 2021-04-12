@@ -20,8 +20,10 @@
 #include <inttypes.h>
 #include <vector>
 #include <thread>
+#include <chrono>
 
 using namespace std;
+using namespace std::chrono;
 
 namespace ocx {
     class runenv : public env {
@@ -29,7 +31,8 @@ namespace ocx {
         runenv(memory &mem, u64 uart, map<string, string>& params) :
             m_mem(mem),
             m_uart(uart),
-            m_params(params)
+            m_params(params),
+            m_start(system_clock::now())
         {}
 
         ~runenv() {}
@@ -81,14 +84,15 @@ namespace ocx {
         }
 
         u64 get_time_ps() override {
-            abort();
+            auto now = system_clock::now();
+            return duration_cast<nanoseconds>(m_start - now).count() * 1000ull;
         }
 
         const char* get_param(const char* name) override {
             auto it = m_params.find(name);
             if (it != m_params.end())
                 return it->second.c_str();
-            else 
+            else
                 return nullptr;
         }
 
@@ -129,6 +133,7 @@ namespace ocx {
         memory& m_mem;
         u64     m_uart;
         map<string, string> m_params;
+        time_point<system_clock> m_start;
     };
 }
 

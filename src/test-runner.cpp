@@ -131,7 +131,7 @@ TEST(ocx_basic, load_library) {
 TEST(ocx_basic, instantiate_core) {
     using ::testing::Return;
     using ::testing::_;
-    mock_env env;
+    ::testing::NiceMock<mock_env> env;
     ON_CALL(env, get_param(_)).WillByDefault(Return(nullptr));
 
     corelib cl(LIBRARY_PATH);
@@ -390,7 +390,10 @@ TEST_F(ocx_core, breakpoint_run) {
     EXPECT_CALL(env, handle_breakpoint(0x200)).WillOnce(Return(false));
     EXPECT_CALL(env, handle_breakpoint(0x300)).WillOnce(Return(true));
 
-    c->step(0x200);
+    // run for a relatively long quantum to ensure that also cores
+    // where the quantum is not instruction-based but cycle-based
+    // work with this test
+    c->step(0x20000);
     free_nop_code(codebuf);
 }
 

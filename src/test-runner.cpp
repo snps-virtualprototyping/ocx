@@ -81,15 +81,23 @@ void* prepare_nop_code(size_t code_size, const std::string& arch) {
     const char* nop;
     size_t nopsz;
 
+    // https://en.wikipedia.org/wiki/NOP_(code) has a list of NOP insns
+
     if (arch.find("ARMv8") == 0) {
         nop = "\x1f\x20\x03\xd5";
+        nopsz = 4;
+    } else if (arch.find("ARMv7") == 0) {
+        nop = "\x00\x00\x00\x00";
         nopsz = 4;
     } else if (arch == "openrisc") {
         nop = "\x00\x00\x00\x15";
         nopsz = 4;
-    } else if (arch== "X86") {
+    } else if (arch == "X86") {
         nop = "\x90";
         nopsz = 1;
+    } else if (arch == "riscv") {
+        nop = "\x13\x00\x00\x00";
+        nopsz = 4;
     } else {
         std::cerr << "unknown architecture " << arch << std::endl;
         free_nop_code(result);
@@ -218,6 +226,14 @@ TEST_F(ocx_core, register_size_not_zero) {
     }
 }
 
+static bool is_readonly_register(ocx::core* core, u64 regid) {
+
+    if (strcmp(core->arch_family(), "riscv") == 0)
+        return (strcmp(core->reg_name(regid), "X0") == 0);
+
+    return false;
+}
+
 TEST_F(ocx_core, register_read_write) {
 
     // the requirements to test reading/writing to the available register is
@@ -255,6 +271,9 @@ TEST_F(ocx_core, register_read_write) {
 
         // check readability and skip otherwise
         if (!c->read_reg(i, rbuf.data()))
+            continue;
+
+        if (is_readonly_register(c, i))
             continue;
 
         // write all ones, skip on failure

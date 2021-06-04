@@ -390,10 +390,15 @@ TEST_F(ocx_core, breakpoint_run) {
     EXPECT_CALL(env, handle_breakpoint(0x200)).WillOnce(Return(false));
     EXPECT_CALL(env, handle_breakpoint(0x300)).WillOnce(Return(true));
 
-    // run for a relatively long quantum to ensure that also cores
-    // where the quantum is not instruction-based but cycle-based
-    // work with this test
-    c->step(0x20000);
+    // run in a loop until we hit the second breakpoint; we should not run
+    // past that breakpoint
+    for (;;) {
+        c->step(0x1000);
+        ASSERT_TRUE(c->read_reg(pc, &buf)) << "failed to read PC after step";
+        if (buf == 0x300)
+            break;
+        ASSERT_TRUE(buf < 0x300) << "ran past blocking breakpoint";
+    }
     free_nop_code(codebuf);
 }
 

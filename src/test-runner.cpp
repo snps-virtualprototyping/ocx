@@ -149,7 +149,7 @@ TEST(ocx_basic, instantiate_core) {
     EXPECT_EQ(page_size ^ (page_size - 1), page_size + (page_size - 1))
         << "page size " << page_size << " is not a power of 2";
 
-    c->set_id(1, 1);
+    c->set_id(1, 0);
     cl.delete_core(c);
 }
 

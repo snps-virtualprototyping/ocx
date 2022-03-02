@@ -397,7 +397,7 @@ TEST_F(ocx_core, breakpoint_run) {
         ASSERT_TRUE(c->read_reg(pc, &buf)) << "failed to read PC after step";
         if (buf == 0x300)
             break;
-        ASSERT_TRUE(buf < 0x300) << "ran past blocking breakpoint";
+        ASSERT_LT(buf, 0x300) << "ran past blocking breakpoint";
     }
     free_nop_code(codebuf);
 }

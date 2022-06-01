@@ -167,6 +167,11 @@ namespace ocx {
             (void)page_paddr;
         }
 
+        virtual void invalidate_page_ptrs(u64 page_paddr_start, u64 size) override {
+            (void)page_paddr_start;
+            (void)size;
+        }
+
         virtual void tb_flush() override {
             return;
         }
@@ -193,10 +198,10 @@ namespace ocx {
             warned = true;
         }
 
-        if (api_version != OCX_API_VERSION)
-            return nullptr;
-
-        return new dummycore();
+        if (api_version == OCX_API_VERSION_20201012 ||
+            api_version == OCX_API_VERSION)
+            return new dummycore();
+        else return nullptr;
     }
 
     void delete_instance(core* cpu) {

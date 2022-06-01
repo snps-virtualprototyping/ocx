@@ -2,9 +2,11 @@
 /.cproject
 /.settings
 /.vs
-
+/.vscode
+/.ccls-cache
 /setup.sh
 
 /BUILD
+/build
 /out
 

@@ -161,6 +161,14 @@ TEST(ocx_basic, mismatched_version) {
         << "library returned core instance despite API version mismatch";
 }
 
+TEST(ocx_basic, older_version) {
+    corelib cl(LIBRARY_PATH);
+    mock_env env;
+    ocx::core* c = cl.create_core(env, CORE_VARIANT, OCX_API_VERSION_20201012);
+    ASSERT_NE(c, nullptr)
+        << "library returned no core instance for API version OCX_API_VERSION_20201012";
+}
+
 class ocx_core : public ::testing::Test
 {
 private:

@@ -198,9 +198,10 @@ namespace ocx {
             warned = true;
         }
 
-        if (api_version == OCX_API_VERSION)
-            return new dummycore();
-        else return nullptr;
+        if (api_version != OCX_API_VERSION)
+            return nullptr;
+
+        return new dummycore();
     }
 
     void delete_instance(core* cpu) {

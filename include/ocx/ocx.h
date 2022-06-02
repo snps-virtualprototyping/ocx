@@ -80,7 +80,7 @@ namespace ocx {
         virtual void signal(u64 sigid, bool set) = 0;
 
         virtual void broadcast_syscall(int callno, std::shared_ptr<void> arg,
-                                    bool async) = 0;
+                                       bool async) = 0;
 
         virtual u64 get_time_ps() = 0;
         virtual const char* get_param(const char* name) = 0;
@@ -93,7 +93,7 @@ namespace ocx {
         virtual void handle_begin_basic_block(u64 vaddr) = 0;
         virtual bool handle_breakpoint(u64 vaddr) = 0;
         virtual bool handle_watchpoint(u64 vaddr, u64 size, u64 data,
-                                    bool iswr) = 0;
+                                       bool iswr) = 0;
     };
 
     class core

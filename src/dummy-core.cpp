@@ -14,7 +14,7 @@
 
 namespace ocx {
 
-    class dummycore: public core
+    class dummycore: public core, public core_inv_range_extension
     {
     public:
         dummycore():
@@ -165,6 +165,11 @@ namespace ocx {
 
         virtual void invalidate_page_ptr(u64 page_paddr) override {
             (void)page_paddr;
+        }
+
+        virtual void invalidate_page_ptrs(u64 start, u64 end) override {
+            (void)start;
+            (void)end;
         }
 
         virtual void tb_flush() override {

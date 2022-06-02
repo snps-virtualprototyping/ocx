@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (C) 2019 Synopsys, Inc.
+* Copyright (C) 2019-2022 Synopsys, Inc.
 * This source code is licensed under the terms of the GNU General Public License
 * as published by the Free Software Foundation; either version 2 of the License
 * or (at your option) any later version.
@@ -150,6 +150,12 @@ namespace ocx {
 
         virtual void tb_flush() = 0;
         virtual void tb_flush_page(u64 start, u64 end) = 0;
+    };
+
+    class core_inv_range_extension
+    {
+    public:
+        virtual void invalidate_page_ptrs(u64 start, u64 end) = 0;
     };
 
     extern OCX_API core* create_instance(u64 ver, env& e, const char* variant);

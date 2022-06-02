@@ -14,7 +14,7 @@
 
 namespace ocx {
 
-    class dummycore: public core
+    class dummycore: public core, public core_inv_range_extension
     {
     public:
         dummycore():
@@ -198,8 +198,7 @@ namespace ocx {
             warned = true;
         }
 
-        if (api_version == OCX_API_VERSION_20201012 ||
-            api_version == OCX_API_VERSION)
+        if (api_version == OCX_API_VERSION)
             return new dummycore();
         else return nullptr;
     }

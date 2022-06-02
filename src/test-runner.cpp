@@ -161,12 +161,17 @@ TEST(ocx_basic, mismatched_version) {
         << "library returned core instance despite API version mismatch";
 }
 
-TEST(ocx_basic, older_version) {
+TEST(ocx_basic, core_inv_range_extension) {
     corelib cl(LIBRARY_PATH);
     mock_env env;
-    ocx::core* c = cl.create_core(env, CORE_VARIANT, OCX_API_VERSION_20201012);
+    ocx::core* c = cl.create_core(env, CORE_VARIANT);
     ASSERT_NE(c, nullptr)
-        << "library returned no core instance for API version OCX_API_VERSION_20201012";
+        << "failed to create core";
+
+    auto ext = dynamic_cast<ocx::core_inv_range_extension*>(c);
+    if (ext)
+        ext->invalidate_page_ptrs(0, 0xfff);
+    cl.delete_core(c);
 }
 
 class ocx_core : public ::testing::Test

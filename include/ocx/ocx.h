@@ -162,7 +162,7 @@ namespace ocx {
         class core : public v20201012::core 
         {
         public:
-            virtual void invalidate_page_ptrs(u64 page_paddr_start, u64 size) = 0;
+            virtual void invalidate_page_ptrs(u64 start, u64 end) = 0;
         };
 
         class env : public v20201012::env {};

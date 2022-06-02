@@ -167,9 +167,9 @@ namespace ocx {
             (void)page_paddr;
         }
 
-        virtual void invalidate_page_ptrs(u64 page_paddr_start, u64 size) override {
-            (void)page_paddr_start;
-            (void)size;
+        virtual void invalidate_page_ptrs(u64 start, u64 end) override {
+            (void)start;
+            (void)end;
         }
 
         virtual void tb_flush() override {

@@ -3,7 +3,7 @@ project(ocx)
 
 option(OCX_BUILD_TESTS "Build unit tests" ON)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 
 set(src "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(inc "${CMAKE_CURRENT_SOURCE_DIR}/include")

@@ -96,6 +96,12 @@ namespace ocx {
                                        bool iswr) = 0;
     };
 
+    class env_trace_insns_extension
+    {
+    public:
+        virtual void handle_trace_insn(u64 vaddr, size_t size) = 0;
+    };
+
     class core
     {
     protected:
@@ -156,6 +162,12 @@ namespace ocx {
     {
     public:
         virtual void invalidate_page_ptrs(u64 start, u64 end) = 0;
+    };
+
+    class core_trace_insns_extension
+    {
+    public:
+        virtual bool trace_insns(bool on) = 0;
     };
 
     extern OCX_API core* create_instance(u64 ver, env& e, const char* variant);

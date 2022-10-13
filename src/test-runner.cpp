@@ -40,7 +40,7 @@ namespace ocx {
 static const char* LIBRARY_PATH = "<library path missing>";
 static const char* CORE_VARIANT = "<variant missing>";
 
-class mock_env : public ocx::env {
+class mock_env : public ocx::env, public ocx::env_trace_insns_extension {
 public:
     ~mock_env() {}
     MOCK_METHOD1(get_page_ptr_r, u8*(u64));
@@ -57,6 +57,8 @@ public:
     MOCK_METHOD4(handle_watchpoint, bool(u64, u64, u64, bool));
     MOCK_METHOD1(handle_begin_basic_block, void(u64));
     MOCK_METHOD1(get_param, const char*(const char*));
+
+    MOCK_METHOD2(handle_trace_insn, void(u64, size_t));
 };
 
 void free_nop_code(void* buf) {
@@ -173,6 +175,26 @@ TEST(ocx_basic, core_inv_range_extension) {
         ext->invalidate_page_ptrs(0, 0xfff);
     cl.delete_core(c);
 }
+
+TEST(ocx_basic, core_trace_insns_extension) {
+    corelib cl(LIBRARY_PATH);
+    mock_env env;
+    ocx::core* c = cl.create_core(env, CORE_VARIANT);
+    ASSERT_NE(c, nullptr)
+        << "failed to create core";
+
+    auto ext = dynamic_cast<ocx::core_trace_insns_extension*>(c);
+    if (ext) {
+        auto env_ext = dynamic_cast<ocx::env_trace_insns_extension*>(&env);
+        EXPECT_NE(env_ext, nullptr);
+
+        ext->trace_insns(true);
+        ext->trace_insns(false);
+    }
+    cl.delete_core(c);
+}
+
+
 
 class ocx_core : public ::testing::Test
 {

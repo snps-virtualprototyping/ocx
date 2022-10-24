@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <thread>
+#include <cstring>
 
 #define OCX_DLL_EXPORT
 
@@ -14,11 +15,16 @@
 
 namespace ocx {
 
-    class dummycore: public core, public core_inv_range_extension
+    class dummycore:
+        public core,
+        public core_inv_range_extension,
+        public core_trace_insns_extension
     {
     public:
-        dummycore():
-            core(), m_num_insn() {
+        dummycore(env& e):
+            core(),
+            m_num_insn(),
+            m_env(e) {
         }
 
         virtual ~dummycore() {
@@ -82,11 +88,11 @@ namespace ocx {
         }
 
         virtual u64 sp_regid() override {
-            return 0;
+            return 1;
         }
 
         virtual u64 num_regs() override {
-            return 1;
+            return 2;
         }
 
         virtual size_t reg_size(u64 regid) override {
@@ -95,8 +101,11 @@ namespace ocx {
         }
 
         virtual const char* reg_name(u64 regid) override {
-            (void)regid;
-            return "NONE";
+            switch (regid) {
+            case 0: return "DUMMY_PC";
+            case 1: return "DUMMY_SP";
+            default: return "NONE";
+            }
         }
 
         virtual bool read_reg(u64 regid, void* buf) override {
@@ -182,15 +191,22 @@ namespace ocx {
             return;
         }
 
+        virtual bool trace_insns(bool on) override {
+            (void)on;
+            auto env_ext = dynamic_cast<env_trace_insns_extension*>(&m_env);
+            return env_ext != nullptr;
+        }
+
     private:
         u64 m_num_insn;
+        env& m_env;
     };
 
     core* create_instance(u64 api_version, env& e, const char* variant) {
         (void)(e);
 
         static bool warned = false;
-        if (!warned) {
+        if (!warned && strcmp(variant, "test") != 0) {
             std::cerr << "This is just a dummy OpenCpuX stub, which does not "
                       << "provide any functionality." << std::endl;
             std::cerr << "Requested model was '" << variant << "', "
@@ -201,7 +217,7 @@ namespace ocx {
         if (api_version != OCX_API_VERSION)
             return nullptr;
 
-        return new dummycore();
+        return new dummycore(e);
     }
 
     void delete_instance(core* cpu) {

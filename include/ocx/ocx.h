@@ -102,6 +102,12 @@ namespace ocx {
         virtual void handle_trace_insn(u64 vaddr, size_t size) = 0;
     };
 
+    class env_set_exclusive_extension
+    {
+    public:
+        virtual void set_exclusive(bool excl) = 0;
+    };
+
     class core
     {
     protected:

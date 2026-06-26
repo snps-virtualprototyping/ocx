@@ -13,7 +13,7 @@
 
 #include "ocx/ocx.h"
 
-namespace ocx {
+namespace ocx20250721::ocx {
 
     class dummycore:
         public core,
@@ -32,7 +32,7 @@ namespace ocx {
         }
 
         virtual const char* provider() override {
-            return "ocx::dummycore";
+            return "ocx20250721::dummycore";
         }
 
         virtual const char* arch() override {
@@ -118,6 +118,36 @@ namespace ocx {
             (void)regid;
             (void)buf;
             return 0;
+        }
+
+        virtual u64 num_ports() override {
+            return 2;
+        }
+
+        virtual port_direction port_dir(u64 portid) override {
+            switch (portid) {
+            case 0:
+            case 1:
+                return PORT_OUT;
+            default:
+                return PORT_UNKNOWN;
+            }
+        }
+
+        virtual const char* port_name(u64 portid) override {
+            switch (portid) {
+            case 0:
+                return "MEM";
+            case 1:
+                return "IO";
+            default:
+                return nullptr;
+            }
+        }
+
+        virtual response transport(const transaction& tx) override {
+            (void)tx;
+            return RESP_FAILED;
         }
 
         virtual bool add_breakpoint(u64 vaddr) override {

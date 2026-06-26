@@ -16,7 +16,7 @@
 #include <iostream>
 #include <fstream>
 
-namespace ocx {
+namespace ocx20250721::ocx {
 
     memory::memory(u64 size, u64 alignment) :
         m_size(size),
@@ -67,7 +67,7 @@ namespace ocx {
         ERROR_ON(!file.good(), "unable to read %s", path);
     }
 
-    ocx::response memory::transact(const ocx::transaction& tx) {
+    response memory::transact(const transaction& tx) {
         (void)tx;
         return RESP_FAILED;
     }

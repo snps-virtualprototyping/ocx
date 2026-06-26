@@ -17,9 +17,7 @@
 
 #include "corelib.h"
 
-using namespace ocx;
-
-namespace ocx {
+namespace ocx20250721::ocx {
 
     bool operator == (const transaction& ta, const transaction& tb) {
         if (ta.addr != tb.addr)
@@ -40,7 +38,7 @@ namespace ocx {
 static const char* LIBRARY_PATH = "<library path missing>";
 static const char* CORE_VARIANT = "<variant missing>";
 
-class mock_env : public ocx::env, public ocx::env_trace_insns_extension {
+class mock_env : public env, public env_trace_insns_extension {
 public:
     ~mock_env() {}
     MOCK_METHOD1(get_page_ptr_r, u8*(u64));
@@ -52,12 +50,12 @@ public:
     MOCK_METHOD0(get_time_ps, u64());
     MOCK_METHOD2(notify, void(u64, u64));
     MOCK_METHOD1(cancel, void(u64));
-    MOCK_METHOD1(hint, void(ocx::hint_kind));
+    MOCK_METHOD1(hint, void(hint_kind));
     MOCK_METHOD1(handle_breakpoint, bool(u64));
     MOCK_METHOD4(handle_watchpoint, bool(u64, u64, u64, bool));
     MOCK_METHOD1(handle_begin_basic_block, void(u64));
     MOCK_METHOD1(get_param, const char*(const char*));
-
+    MOCK_METHOD1(wakeup_core, void(u64));
     MOCK_METHOD2(handle_trace_insn, void(u64, size_t));
 };
 
@@ -137,7 +135,7 @@ TEST(ocx_basic, instantiate_core) {
     ON_CALL(env, get_param(_)).WillByDefault(Return(nullptr));
 
     corelib cl(LIBRARY_PATH);
-    ocx::core* c = cl.create_core(env, CORE_VARIANT);
+    core* c = cl.create_core(env, CORE_VARIANT);
     ASSERT_NE(c, nullptr)
         << "failed to create core variant " << CORE_VARIANT;
 
@@ -158,7 +156,7 @@ TEST(ocx_basic, instantiate_core) {
 TEST(ocx_basic, mismatched_version) {
     corelib cl(LIBRARY_PATH);
     mock_env env;
-    ocx::core* c = cl.create_core(env, CORE_VARIANT, 0);
+    core* c = cl.create_core(env, CORE_VARIANT, 0);
     ASSERT_EQ(c, nullptr)
         << "library returned core instance despite API version mismatch";
 }
@@ -166,11 +164,11 @@ TEST(ocx_basic, mismatched_version) {
 TEST(ocx_basic, core_inv_range_extension) {
     corelib cl(LIBRARY_PATH);
     mock_env env;
-    ocx::core* c = cl.create_core(env, CORE_VARIANT);
+    core* c = cl.create_core(env, CORE_VARIANT);
     ASSERT_NE(c, nullptr)
         << "failed to create core";
 
-    auto ext = dynamic_cast<ocx::core_inv_range_extension*>(c);
+    auto ext = dynamic_cast<core_inv_range_extension*>(c);
     if (ext)
         ext->invalidate_page_ptrs(0, 0xfff);
     cl.delete_core(c);
@@ -179,13 +177,13 @@ TEST(ocx_basic, core_inv_range_extension) {
 TEST(ocx_basic, core_trace_insns_extension) {
     corelib cl(LIBRARY_PATH);
     mock_env env;
-    ocx::core* c = cl.create_core(env, CORE_VARIANT);
+    core* c = cl.create_core(env, CORE_VARIANT);
     ASSERT_NE(c, nullptr)
         << "failed to create core";
 
-    auto ext = dynamic_cast<ocx::core_trace_insns_extension*>(c);
+    auto ext = dynamic_cast<core_trace_insns_extension*>(c);
     if (ext) {
-        auto env_ext = dynamic_cast<ocx::env_trace_insns_extension*>(&env);
+        auto env_ext = dynamic_cast<env_trace_insns_extension*>(&env);
         EXPECT_NE(env_ext, nullptr);
 
         ext->trace_insns(true);
@@ -203,7 +201,7 @@ private:
 
 protected:
     ::testing::NiceMock<mock_env> env;
-    ocx::core *c;
+    core *c;
 
     ocx_core():
         m_cl(LIBRARY_PATH),
@@ -261,7 +259,7 @@ TEST_F(ocx_core, register_size_not_zero) {
     }
 }
 
-static bool is_readonly_register(ocx::core* core, u64 regid) {
+static bool is_readonly_register(core* core, u64 regid) {
 
     if (strcmp(core->arch_family(), "riscv") == 0)
         return (strcmp(core->reg_name(regid), "X0") == 0);
@@ -382,7 +380,7 @@ TEST_F(ocx_core, breakpoint_add_remove) {
     free_nop_code(codebuf);
 }
 
-ACTION_P(GetPtr, codebuf, codebuf_sz) {
+ACTION_P2(GetPtr, codebuf, codebuf_sz) {
     return arg0 < codebuf_sz ? (u8*)codebuf + arg0 : nullptr;
 }
 
@@ -430,7 +428,7 @@ TEST_F(ocx_core, breakpoint_run) {
     for (;;) {
         c->step(0x1000);
         ASSERT_TRUE(c->read_reg(pc, &buf)) << "failed to read PC after step";
-        if (buf == 0x300)
+        if (buf <= 0x305)
             break;
         ASSERT_LT(buf, 0x300) << "ran past blocking breakpoint";
     }

@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (C) 2019-2022 Synopsys, Inc.
+* Copyright (C) 2019-2026 Synopsys, Inc.
 * This source code is licensed under the terms of the GNU General Public License
 * as published by the Free Software Foundation; either version 2 of the License
 * or (at your option) any later version.
@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include <memory>
 
-#define OCX_API_VERSION 20201012ull
+#define OCX_API_VERSION 20250721ull
 
 #ifdef _MSC_VER
 #  ifdef OCX_STATIC
@@ -29,7 +29,7 @@
 #  define OCX_API
 #endif
 
-namespace ocx {
+namespace ocx20250721::ocx {
 
     typedef uint8_t  u8;
     typedef uint16_t u16;
@@ -40,13 +40,15 @@ namespace ocx {
         u64 addr;
         u64 size;
         u8* data;
+        u8  space;
+        u64 cpuid;
+        u64 port;
         bool is_read;
         bool is_user;
         bool is_secure;
         bool is_insn;
         bool is_excl;
         bool is_lock;
-        bool is_port;
         bool is_debug;
     };
 
@@ -64,7 +66,23 @@ namespace ocx {
         HINT_WFE,
         HINT_SEV,
         HINT_SEVL,
+        HINT_RST_REQ,
     };
+
+    enum port_direction {
+        PORT_UNKNOWN = 0,
+        PORT_IN,
+        PORT_OUT
+    };
+
+    enum branch_type {
+        BR_UNCONDITIONAL = 0,
+        BR_CONDITION_PASS,
+        BR_CONDITION_FAIL,
+        BR_ADDRESS_HIT
+    };
+
+    class core;
 
     class env
     {
@@ -94,6 +112,8 @@ namespace ocx {
         virtual bool handle_breakpoint(u64 vaddr) = 0;
         virtual bool handle_watchpoint(u64 vaddr, u64 size, u64 data,
                                        bool iswr) = 0;
+
+        virtual void wakeup_core(u64 idx) = 0;
     };
 
     class env_trace_insns_extension
@@ -102,10 +122,30 @@ namespace ocx {
         virtual void handle_trace_insn(u64 vaddr, size_t size) = 0;
     };
 
+    class env_trace_coverage_extension
+    {
+    public:
+        virtual void handle_fast_code_coverage_block(u64 previous_block_end_pc,
+                             u64 next_block_start_pc, branch_type attr) = 0;
+    };
+
+    class env_trace_mode_change_extension
+    {
+    public:
+        virtual void notify_mode_trace_ipt(u64 new_mode) = 0;
+    };
+
     class env_set_exclusive_extension
     {
     public:
         virtual void set_exclusive(bool excl) = 0;
+    };
+
+    class env_reg_breakpoint_extension
+    {
+    public:
+        virtual bool handle_reg_breakpoint(u64 regid, u64 val,
+                                           u64 pc, bool iswr) = 0;
     };
 
     class core
@@ -143,6 +183,12 @@ namespace ocx {
         virtual bool read_reg(u64 regid, void* buf) = 0;
         virtual bool write_reg(u64 regid, const void* buf) = 0;
 
+        virtual u64 num_ports() = 0;
+        virtual port_direction port_dir(u64 portid) = 0;
+        virtual const char* port_name(u64 portid) = 0;
+
+        virtual response transport(const transaction& tx) = 0;
+
         virtual bool add_breakpoint(u64 vaddr) = 0;
         virtual bool remove_breakpoint(u64 vaddr) = 0;
 
@@ -176,9 +222,35 @@ namespace ocx {
         virtual bool trace_insns(bool on) = 0;
     };
 
+    class core_trace_coverage_extension
+    {
+    public:
+        virtual bool trace_coverage_blocks(bool on) = 0;
+    };
+    class core_mode_change_trace_extension
+    {
+    public:
+        virtual bool trace_mode_changes(bool on) = 0;
+    };
+
+    class core_global_monitor_extension
+    {
+    public:
+        virtual u64* register_global_monitor(u64** mon_ptr) = 0;
+    };
+
+    class core_reg_breakpoint_extension
+    {
+    public:
+        virtual bool add_reg_breakpoint(u64 regid, bool iswr) = 0;
+        virtual bool remove_reg_breakpoint(u64 regid, bool iswr) = 0;
+    };
+
     extern OCX_API core* create_instance(u64 ver, env& e, const char* variant);
     extern OCX_API void  delete_instance(core* c);
 
 }
+
+using namespace ocx20250721::ocx;
 
 #endif

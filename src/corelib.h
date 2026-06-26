@@ -12,8 +12,8 @@
 
 class corelib {
 private:
-    typedef ocx::core*  (createfunc)(ocx::u64, ocx::env&, const char*);
-    typedef void        (deletefunc)(ocx::core*);
+    typedef core*  (createfunc)(u64, env&, const char*);
+    typedef void        (deletefunc)(core*);
 
     const char* m_sopath;
     void*       m_handle;
@@ -21,11 +21,11 @@ private:
     deletefunc* m_delete;
 
 #ifdef _MSC_VER
-    const char* const CREATE_SYM = "?create_instance@ocx@@YAPEAVcore@1@_KAEAVenv@1@PEBD@Z";
-    const char* const DELETE_SYM = "?delete_instance@ocx@@YAXPEAVcore@1@@Z";
+    const char* const CREATE_SYM = "?create_instance@ocx@ocx20250721@@YAPEAVcore@12@_KAEAVenv@12@PEBD@Z";
+    const char* const DELETE_SYM = "?delete_instance@ocx@ocx20250721@@YAXPEAVcore@12@@Z";
 #else
-    const char* const CREATE_SYM = "_ZN3ocx15create_instanceEmRNS_3envEPKc";
-    const char* const DELETE_SYM = "_ZN3ocx15delete_instanceEPNS_4coreE";
+    const char* const CREATE_SYM = "_ZN11ocx202507213ocx15create_instanceEmRNS0_3envEPKc";
+    const char* const DELETE_SYM = "_ZN11ocx202507213ocx15delete_instanceEPNS0_4coreE";
 #endif
 
     void do_construction() {
@@ -57,12 +57,12 @@ public:
         do_destruction();
     }
 
-    ocx::core* create_core(ocx::env& env, const char* variant,
-                           ocx::u64 api_version = OCX_API_VERSION) {
+    core* create_core(env& env, const char* variant,
+                           u64 api_version = OCX_API_VERSION) {
         return m_create(api_version, env, variant);
     }
 
-    void delete_core(ocx::core* core) {
+    void delete_core(core* core) {
         m_delete(core);
     }
 

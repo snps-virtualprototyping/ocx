@@ -13,7 +13,7 @@
 
 #include "ocx/ocx.h"
 
-namespace ocx {
+namespace ocx20250721::ocx {
 
     class memory
     {
@@ -34,7 +34,7 @@ namespace ocx {
 
         void load(const char*);
 
-        ocx::response transact(const ocx::transaction& tx);
+        response transact(const transaction& tx);
     };
 
 }

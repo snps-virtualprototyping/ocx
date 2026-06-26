@@ -23,7 +23,7 @@
 
 using namespace std;
 
-namespace ocx {
+namespace ocx20250721::ocx {
     class runenv : public env {
     public:
         runenv(memory &mem) :
@@ -116,6 +116,10 @@ namespace ocx {
             abort();
         }
 
+        void wakeup_core(u64 idx) override {
+            (void)idx;
+        }
+
     private:
         memory &m_mem;
     };
@@ -133,11 +137,11 @@ static void usage(const char* name) {
     fprintf(stderr, "  <variant>   the OCX core variant to instantiate\n");
 }
 
-static void run_core(ocx::core* c, ocx::u64 quantum, ocx::u64 reset_pc) {
+static void run_core(core* c, u64 quantum, u64 reset_pc) {
 
     c->write_reg(c->pc_regid(), &reset_pc);
 
-    ocx::u64 overshoot = 0;
+    u64 overshoot = 0;
     for (;;) {
         overshoot = c->step(quantum - overshoot);
         if (overshoot >= quantum)
@@ -181,18 +185,18 @@ int main(int argc, char** argv) {
     ocx_variant =  argv[optind + 1];
 
     corelib cl(ocx_lib_path);
-    ocx::memory mem(memsize, 0x1000);
+    memory mem(memsize, 0x1000);
     printf("Allocated 0x%" PRIx64 " bytes at 0x%p\n",
            mem.get_size(), mem.get_ptr());
 
     mem.load(binary);
     printf("Loaded file %s into memory\n", binary);
 
-    ocx::runenv env(mem);
+    runenv env(mem);
 
-    vector<ocx::core*> cores;
+    vector<core*> cores;
     for (unsigned int i = 0; i < ncores; ++i) {
-        ocx::core* c = cl.create_core(env, ocx_variant, OCX_API_VERSION);
+        core* c = cl.create_core(env, ocx_variant, OCX_API_VERSION);
         if (c == 0) {
             fprintf(stderr, "Failed to create OCX core variant %s\n",
                     ocx_variant);
